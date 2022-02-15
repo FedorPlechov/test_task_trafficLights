@@ -19,4 +19,8 @@ export default {
   font-size: 1.2rem;
   cursor: pointer;
 }
+.stop:hover {
+  background: #41b783;
+  color: white;
+}
 </style>
