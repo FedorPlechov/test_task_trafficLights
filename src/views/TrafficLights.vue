@@ -15,12 +15,14 @@
 <script>
 import Light from "../components/Light";
 import ButtonStop from "../components/ButtonStop";
+
 export default {
   name: "TrafficLights",
   data() {
     return {
       counter: null,
-      timerId: null
+      timerId: null,
+      prevRoute: null
     }
   },
   components: {
@@ -32,16 +34,12 @@ export default {
       if (this.$route.path === '/yellow') return 3;
       if (this.$route.path === '/green') return 15;
     },
-    nextLight() {
-      if (this.$route.path === '/red') return 'Yellow';
-      if (this.$route.path === '/yellow') return 'Green';
-      if (this.$route.path === '/green') return 'Red';
+    nextRoute() {
+      if ((this.$route.path === '/red') || (this.$route.path === '/green')) return {name: 'Yellow', query: {timer: 3}};
+      if (this.$route.path === '/yellow' && this.prevRoute.path === '/red') return {name: 'Green', query: {timer: 15}};
+      if (this.$route.path === '/yellow' && this.prevRoute.path === '/green') return {name: 'Red', query: {timer: 10}};
+      if (this.$route.path === '/yellow') return {name: 'Green', query: {timer: 15}}
     },
-    nextTimer() {
-      if (this.$route.path === '/red') return 3;
-      if (this.$route.path === '/yellow') return 15;
-      if (this.$route.path === '/green') return 10;
-    }
   },
   methods: {
     setCounterAndQuery(){
@@ -57,14 +55,14 @@ export default {
         this.counter = this.counter - 1;
         this.$router.push({query: {timer: this.counter}})
         if (this.counter === 0) {
-          this.$router.push({name: this.nextLight, query: {timer: this.nextTimer}})
+          this.$router.push(this.nextRoute);
           return;
         }
         this.timerId = setTimeout(tick, 1000);
       }
       this.timerId = setTimeout(tick, 1000);
     },
-    stopInterval(){
+    stopInterval() {
       clearTimeout(this.timerId);
     }
   },
@@ -73,6 +71,11 @@ export default {
   },
   mounted() {
     this.setInterval()
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.prevRoute = from
+    })
   }
 
 }
